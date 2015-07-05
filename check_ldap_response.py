@@ -26,14 +26,18 @@ cacert = '/etc/openldap/cacerts/ca.pem'
 
 
 def argsParser():
-    """ Return options collected from cmd line (output: instance) """
+    """ Return options collected from cmd line (output: dict) """
     parser = optparse.OptionParser()
     parser.add_option('-T', '--protocol', help='LDAP type [Default: %default]', default=protocol, dest='protocol', action='store')
     parser.add_option('-H', '--hostname', help='LDAP server hostname [Default: %default]', default=hostname, dest='hostname', action='store')
     parser.add_option('-P', '--port', help='LDAP port [Default: %default]', default=port, dest='port', action='store')
     parser.add_option('-u', '--username', help='LDAP user with appropriate permissions [Default: %default]', default=username, dest='username', action='store')
     parser.add_option('-p', '--password', help='LDAP user\'s password', default=None, dest='password', action='store')
-    return parser.parse_args()
+
+    opts, args = parser.parse_args()
+    opts = opts.__dict__
+
+    return opts
 
 
 def cmd(command_line):
@@ -45,16 +49,12 @@ def cmd(command_line):
 
 def ldapRequest(ldap_opts):
     """ Return output of ldapsearch (output: tuple) """
-    output = cmd('/usr/bin/ldapsearch -H "%(protocol)s://%(hostname)s:%(port)s" -D "cn=%(username)s,ou=machines,dc=vast,dc=com" %(password)s -b %(searchbase)s -LLL -x %(filter)s' % ldap_opts)
+    output = cmd('/usr/bin/ldapsearch -H "%(protocol)s://%(hostname)s:%(port)s" -D "cn=%(username)s,ou=machines,dc=example,dc=com" %(password)s -b %(searchbase)s -LLL -x %(filter)s' % ldap_opts)
     return output['output'], output['error'], output['code']
 
 
 try:
-    # Create opts instance
-    opts, args = argsParser()
-
-    # Create dict from instance attributes
-    opts = opts.__dict__
+    opts = argsParser()
 
     # Add extra elements into dict 
     opts['filter'] = filter
