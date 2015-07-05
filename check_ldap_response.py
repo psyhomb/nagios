@@ -18,6 +18,8 @@ port = '636'
 username = 'test'
 
 # Default search vars (cannot be overridden by a command line args)
+# Note: %s in binddn will be replaced with username
+binddn = 'cn=%s,ou=machines,dc=example,dc=com'
 searchbase = 'ou=people,dc=example,dc=com'
 filter = 'ou=people'
 
@@ -49,7 +51,7 @@ def cmd(command_line):
 
 def ldapRequest(ldap_opts):
     """ Return output of ldapsearch (output: tuple) """
-    output = cmd('/usr/bin/ldapsearch -H "%(protocol)s://%(hostname)s:%(port)s" -D "cn=%(username)s,ou=machines,dc=example,dc=com" %(password)s -b %(searchbase)s -LLL -x %(filter)s' % ldap_opts)
+    output = cmd('/usr/bin/ldapsearch -H "%(protocol)s://%(hostname)s:%(port)s" -D %(username)s %(password)s -b %(searchbase)s -LLL -x %(filter)s' % ldap_opts)
     return output['output'], output['error'], output['code']
 
 
@@ -57,8 +59,9 @@ try:
     opts = argsParser()
 
     # Add extra elements into dict 
-    opts['filter'] = filter
+    opts['username'] = binddn % opts['username']
     opts['searchbase'] = searchbase
+    opts['filter'] = filter
 
     # Check if password is specified
     if opts['password']:
