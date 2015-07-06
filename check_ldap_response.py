@@ -77,13 +77,13 @@ except SystemExit:
 
 response = ldapRequest(opts)
 
-output = response[0].strip()
-error = response[1].strip()
+output = response[0].strip().replace('\n', ' ')
+error = response[1].strip().replace('\n', ' ')
 code = response[2]
 
 if code == 0:
-    print "OK: Valid response received from %s\n\n%s" % (opts['hostname'], output)
+    print "OK: Valid response received from %s (%s)" % (opts['hostname'], output)
     sys.exit(0)
 else:
-    print "CRITICAL: Invalid or no response received from %s\n%s" % (opts['hostname'], error)
+    print "CRITICAL: %s - %s" % (opts['hostname'], error)
     sys.exit(2)
