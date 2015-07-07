@@ -6,6 +6,7 @@
 
 import os
 import sys
+import time
 import subprocess
 import shlex
 import optparse
@@ -51,8 +52,11 @@ def cmd(command_line):
 
 def ldapRequest(ldap_opts):
     """ Return output of ldapsearch (output: tuple) """
+    start = time.time() * 1000
     output = cmd('/usr/bin/ldapsearch -H "%(protocol)s://%(hostname)s:%(port)s" -D %(username)s %(password)s -b %(searchbase)s -LLL -x %(filter)s' % ldap_opts)
-    return output['output'], output['error'], output['code']
+    now = time.time() * 1000
+    rtime = now - start
+    return output['output'], output['error'], output['code'], rtime
 
 
 try:
@@ -80,10 +84,11 @@ response = ldapRequest(opts)
 output = response[0].strip().replace('\n', ' ')
 error = response[1].strip().replace('\n', ' ')
 code = response[2]
+rtime = response[3]
 
 if code == 0:
-    print "OK: Valid response received from %s (%s)" % (opts['hostname'], output)
+    print "OK: Valid response received from %s (%s) | response_time=%0.2f" % (opts['hostname'], output, rtime)
     sys.exit(0)
 else:
-    print "CRITICAL: %s - %s" % (opts['hostname'], error)
+    print "CRITICAL: %s - %s | response_time=%0.2f" % (opts['hostname'], error, rtime)
     sys.exit(2)
